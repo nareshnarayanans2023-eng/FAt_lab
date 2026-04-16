@@ -2,47 +2,59 @@ pipeline {
     agent any
 
     environment {
-        // Replace with your Docker Hub ID and repository name
-        DOCKER_HUB_USER = 'naresh876'
+        // 1. Replace with your actual Docker Hub username
+        DOCKER_HUB_USER = 'your-dockerhub-username'
         DOCKER_REPO = 'inheritance-app'
+        // 2. This must match the ID you created in Jenkins Credentials
         DOCKER_CRED_ID = 'docker-hub-credentials' 
     }
 
     stages {
         stage('Checkout GitHub') {
             steps {
-                // Jenkins automatically pulls the code if linked to SCM
+                // Pulls the latest code from your GitHub repo
                 checkout scm
             }
         }
 
         stage('JUnit Testing') {
             steps {
-                sh 'mvn test'
+                // Runs Maven tests on Windows
+                bat 'mvn test'
             }
         }
 
         stage('Maven Build') {
             steps {
-                sh 'mvn clean package'
+                // Packages the app into a JAR file
+                bat 'mvn clean package -DskipTests'
             }
         }
 
         stage('Create Docker Image') {
             steps {
-                sh "docker build -t ${DOCKER_HUB_USER}/${DOCKER_REPO}:latest ."
+                // Builds the image using your Dockerfile
+                bat "docker build -t %DOCKER_HUB_USER%/%DOCKER_REPO%:latest ."
             }
         }
 
         stage('Push to Docker Hub') {
             steps {
+                // Logs into Docker Hub and pushes the image
                 withCredentials([usernamePassword(credentialsId: "${DOCKER_CRED_ID}", 
-                                 passwordVariable: '$PRTn73367', 
-                                 usernameVariable: 'naresh876')]) {
-                    sh "echo \$DOCKER_PASS | docker login -u \$DOCKER_USER --password-stdin"
-                    sh "docker push ${DOCKER_HUB_USER}/${DOCKER_REPO}:latest"
+                                 passwordVariable: 'DOCKER_PASS', 
+                                 usernameVariable: 'DOCKER_USER')]) {
+                    bat "echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin"
+                    bat "docker push %DOCKER_HUB_USER%/%DOCKER_REPO%:latest"
                 }
             }
+        }
+    }
+    
+    post {
+        always {
+            // Cleans up the workspace after the build
+            cleanWs()
         }
     }
 }
