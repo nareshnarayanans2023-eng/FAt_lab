@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         // 1. Replace with your actual Docker Hub username
-        DOCKER_HUB_USER = 'your-dockerhub-username'
+        DOCKER_HUB_USER = 'naresh876'
         DOCKER_REPO = 'inheritance-app'
         // 2. This must match the ID you created in Jenkins Credentials
         DOCKER_CRED_ID = 'docker-hub-credentials' 
